@@ -13,7 +13,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
+//? customer
 model Customer {
   id       String    @id @default(auto()) @map("_id") @db.ObjectId
   name     String    @unique
@@ -25,26 +25,46 @@ model Customer {
   // authorId String    @db.ObjectId
   // comments Comment[]
 }
-// model User {
-//   id      String   @id @default(auto()) @map("_id") @db.ObjectId
-//   email   String   @unique
-//   name    String?
-//   address Address?
-//   posts   Post[]
-// }
 
-// model Comment {
-//   id      String @id @default(auto()) @map("_id") @db.ObjectId
-//   comment String
-//   post    Post   @relation(fields: [postId], references: [id])
-//   postId  String @db.ObjectId
-// }
+model User {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  email     String  @unique
+  username  String  @unique
+  password  String
+  firstName String
+  lastName  String
+  phone     String @unique
+  dob       DateTime?
+  gender    Gender
+  image     String?
+  role     Role    @default(ATTENDANT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  shops     Shop[]
+}
 
-// // Address is an embedded document
-// type Address {
-//   street String
-//   city   String
-//   state  String
-//   zip    String
-// }
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum Role {
+  ADMIN
+  ATTENDANT
+}
+
+//? shop
+// prisma/schema.prisma
+model Shop {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId // Unique ID
+  name        String
+  location    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  adminId     String   @db.ObjectId
+  admin       User    @relation(fields: [adminId], references: [id])
+  attendantIds String[] @db.ObjectId
+ 
+}
+
 
