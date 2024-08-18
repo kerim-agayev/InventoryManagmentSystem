@@ -14,3 +14,37 @@ datasource db {
 }
 
 
+model Customer {
+  id       String    @id @default(auto()) @map("_id") @db.ObjectId
+  name     String    @unique
+  email    String
+  phone     String 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  // author   User      @relation(fields: [authorId], references: [id])
+  // authorId String    @db.ObjectId
+  // comments Comment[]
+}
+// model User {
+//   id      String   @id @default(auto()) @map("_id") @db.ObjectId
+//   email   String   @unique
+//   name    String?
+//   address Address?
+//   posts   Post[]
+// }
+
+// model Comment {
+//   id      String @id @default(auto()) @map("_id") @db.ObjectId
+//   comment String
+//   post    Post   @relation(fields: [postId], references: [id])
+//   postId  String @db.ObjectId
+// }
+
+// // Address is an embedded document
+// type Address {
+//   street String
+//   city   String
+//   state  String
+//   zip    String
+// }
+
