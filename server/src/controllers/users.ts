@@ -5,9 +5,13 @@ import bcyrpt from 'bcrypt'
 const getUsers: RequestHandler = async (req, res) => {
   try {
     const users = await db.user.findMany();
-    res.status(200).json({data:users, error:null});
+    const filteredUsers = users.map(item => {
+      const {password:_, ...others} = item
+      return others
+    })
+    res.status(200).json({data:filteredUsers , error:null});
   } catch (error) {
-    res.status(500).json({ error: "error bas verdi." });
+    res.status(500).json({ error: "error bas verdi.", data:null });
   }
 };
 
@@ -21,9 +25,10 @@ const getUserById: RequestHandler = async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: "user not found." });
     }
-    res.status(200).json({data:user, error:null});
+    const {password:_, ...others} = user;
+    res.status(200).json({data:others, error:null});
   } catch (error) {
-    res.status(500).json({ error: "error bas verdi." });
+    res.status(500).json({ error: "error bas verdi.", data:null });
   }
 };
 
@@ -83,7 +88,7 @@ const createUser: RequestHandler = async (req, res) => {
     // 5. Kullanıcıyı geri döndürme
     res.status(201).json({ data: userWithoutPassword, error: null });
   } catch (error) {
-    res.status(500).json({ error: "istifadeci yaradilarken xeta  bas verdi" });
+    res.status(500).json({ error: "istifadeci yaradilarken xeta  bas verdi" , data:null});
   }
 };
 
