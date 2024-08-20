@@ -2,6 +2,8 @@ import express, { Request, Response } from "express";
 import { getCustomers, getV2Customers } from "./controllers/customers";
 import customerRouter from "./routes/customer";
 import userRouter from "./routes/user";
+import shopRouter from "./routes/shop";
+
 
 require("dotenv").config();
 const cors = require("cors");
@@ -24,5 +26,7 @@ app.listen(PORT, () => {
 app.use("/api/v1", customerRouter)
 //? user
 app.use("/api/v1", userRouter)
+//? shop
+app.use("/api/v1", shopRouter)
 // app.get("/api/v1/customers", getCustomers);
 // app.get("/api/v2/customers", getV2Customers);
