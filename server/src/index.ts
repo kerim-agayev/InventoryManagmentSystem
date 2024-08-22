@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { getCustomers, getV2Customers } from "./controllers/customers";
+import { getCustomers } from "./controllers/customers";
 import customerRouter from "./routes/customer";
 import userRouter from "./routes/user";
 import shopRouter from "./routes/shop";

@@ -1,34 +1,34 @@
 import { db } from "@/db/db";
 import { Request, Response, RequestHandler } from "express";
-import bcyrpt from 'bcrypt'
+import bcyrpt from "bcrypt";
 //? get all users
 const getUsers: RequestHandler = async (req, res) => {
   try {
     const users = await db.user.findMany();
-    const filteredUsers = users.map(item => {
-      const {password:_, ...others} = item
-      return others
-    })
-    res.status(200).json({data:filteredUsers , error:null});
+    const filteredUsers = users.map((item) => {
+      const { password: _, ...others } = item;
+      return others;
+    });
+    res.status(200).json({ data: filteredUsers, error: null });
   } catch (error) {
-    res.status(500).json({ error: "error bas verdi.", data:null });
+    res.status(500).json({ error: "error bas verdi.", data: null });
   }
 };
 // get attendants
 const getAttendants: RequestHandler = async (req, res) => {
   try {
     const users = await db.user.findMany({
-      where:{
-        role:'ATTENDANT'
-      }
+      where: {
+        role: "ATTENDANT",
+      },
     });
-    const filteredUsers = users.map(item => {
-      const {password:_, ...others} = item
-      return others
-    })
-    res.status(200).json({data:filteredUsers , error:null});
+    const filteredUsers = users.map((item) => {
+      const { password: _, ...others } = item;
+      return others;
+    });
+    res.status(200).json({ data: filteredUsers, error: null });
   } catch (error) {
-    res.status(500).json({ error: "error bas verdi.", data:null });
+    res.status(500).json({ error: "error bas verdi.", data: null });
   }
 };
 
@@ -42,10 +42,10 @@ const getUserById: RequestHandler = async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: "user not found." });
     }
-    const {password:_, ...others} = user;
-    res.status(200).json({data:others, error:null});
+    const { password: _, ...others } = user;
+    res.status(200).json({ data: others, error: null });
   } catch (error) {
-    res.status(500).json({ error: "error bas verdi.", data:null });
+    res.status(500).json({ error: "error bas verdi.", data: null });
   }
 };
 
@@ -67,51 +67,59 @@ const createUser: RequestHandler = async (req, res) => {
     //?1. check user validation - bunun icin middleware yazmaq olar
     //?2. check user email, phone, username
     const exisitingUserEmail = await db.user.findUnique({
-        where:{email}
-    })
+      where: { email },
+    });
     const exisitingUserPhone = await db.user.findUnique({
-        where:{phone}
-    })
+      where: { phone },
+    });
     const exisitingUserUsername = await db.user.findUnique({
-        where:{username}
-    })
+      where: { username },
+    });
     if (exisitingUserEmail || exisitingUserPhone || exisitingUserUsername) {
-       res.status(409).json({data:null,message:'email, username ve ya phone databasede qeydiyyatda var...'})
-       return ;
+      res
+        .status(409)
+        .json({
+          data: null,
+          message: "email, username ve ya phone databasede qeydiyyatda var...",
+        });
+      return;
     }
     //?3. hash the password
-    const hashedPassword = await bcyrpt.hash(password, 10)
+    const hashedPassword = await bcyrpt.hash(password, 10);
 
     //?4. create user
     const newUser = await db.user.create({
       data: {
         email,
         username,
-        password : hashedPassword,
+        password: hashedPassword,
         firstName,
         lastName,
         phone,
         dob: dob ? new Date(dob) : undefined,
         gender,
-        image: image? image : 'https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg',
+        image: image
+          ? image
+          : "https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg",
         role,
       },
     });
     //?5. verification code
     //?6. modify the returned user
- 
+
     const { password: _, ...userWithoutPassword } = newUser;
 
     // 5. Kullanıcıyı geri döndürme
     res.status(201).json({ data: userWithoutPassword, error: null });
   } catch (error) {
     console.error("istifadeci yaradilarken xeta :", error); // Hatayı loglayın
-    res.status(500).json({ error: "istifadeci yaradilarken xeta  bas verdi" , data:null});
+    res
+      .status(500)
+      .json({ error: "istifadeci yaradilarken xeta  bas verdi", data: null });
   }
 };
 
-
-//? update user 
+//? update user
 const updateUser: RequestHandler = async (req, res) => {
   const { id } = req.params;
   const {
@@ -132,67 +140,74 @@ const updateUser: RequestHandler = async (req, res) => {
       where: { id: id },
     });
 
-    if (!existingUser ) {
+    if (!existingUser) {
       return res.status(404).json({ error: "User not found.", data: null });
     }
-  //? email, phone, username unique check
-  
+    //? email, phone, username unique check
 
-
-
-
-if (email && email !== existingUser?.email) {
-  const exisitingUserEmail = await db.user.findUnique({
-    where:{email}
-})
-if (exisitingUserEmail) {
-   res.status(409).json({data:null,message:'email databasede qeydiyyatda var...'})
-   return ;
-}
-}
-if(phone && phone !== existingUser?.phone) {
-const exisitingUserPhone = await db.user.findUnique({
-    where:{phone}
-})
-if (exisitingUserPhone) {
-  res.status(409).json({data:null,message:'phone databasede qeydiyyatda var...'})
-  return ;
-}
-}
-if(username && username !== existingUser?.username) {
- const exisitingUserUsername = await db.user.findUnique({
-    where:{username}
-})
-if (exisitingUserUsername) {
-  res.status(409).json({data:null,message:'username databasede qeydiyyatda var...'})
-  return ;
-}
-  }
-
-
-
+    if (email && email !== existingUser?.email) {
+      const exisitingUserEmail = await db.user.findUnique({
+        where: { email },
+      });
+      if (exisitingUserEmail) {
+        res
+          .status(409)
+          .json({ data: null, message: "email databasede qeydiyyatda var..." });
+        return;
+      }
+    }
+    if (phone && phone !== existingUser?.phone) {
+      const exisitingUserPhone = await db.user.findUnique({
+        where: { phone },
+      });
+      if (exisitingUserPhone) {
+        res
+          .status(409)
+          .json({ data: null, message: "phone databasede qeydiyyatda var..." });
+        return;
+      }
+    }
+    if (username && username !== existingUser?.username) {
+      const exisitingUserUsername = await db.user.findUnique({
+        where: { username },
+      });
+      if (exisitingUserUsername) {
+        res
+          .status(409)
+          .json({
+            data: null,
+            message: "username databasede qeydiyyatda var...",
+          });
+        return;
+      }
+    }
 
     //? update user
     const updatedUser = await db.user.update({
       where: { id: id },
       data: {
-        email: email ?? user.email,
-        username: username ?? user.username,
-        firstName: firstName ?? user.firstName,
-        lastName: lastName ?? user.lastName,
-        phone: phone ?? user.phone,
-        dob: dob ? new Date(dob) : user.dob,
-        gender: gender ?? user.gender,
-        image: image ?? user.image,
-        role: role ?? user.role,
+        email: email ?? existingUser.email,
+        username: username ?? existingUser.username,
+        firstName: firstName ?? existingUser.firstName,
+        lastName: lastName ?? existingUser.lastName,
+        phone: phone ?? existingUser.phone,
+        dob: dob ? new Date(dob) : existingUser.dob,
+        gender: gender ?? existingUser.gender,
+        image: image ?? existingUser.image,
+        role: role ?? existingUser.role,
       },
     });
 
-    // 
+    //
     const { password, ...userWithoutPassword } = updatedUser;
     res.status(200).json({ data: userWithoutPassword, error: null });
   } catch (error) {
-    res.status(500).json({ error: "Istifadeci melumatlari yenilenerken xeta bas verdi.", data: null });
+    res
+      .status(500)
+      .json({
+        error: "Istifadeci melumatlari yenilenerken xeta bas verdi.",
+        data: null,
+      });
   }
 };
 
@@ -222,11 +237,13 @@ const updateUserPassword: RequestHandler = async (req, res) => {
       },
     });
 
-    // 
+    //
     const { password: _, ...userWithoutPassword } = updatedUser;
     res.status(200).json({ data: userWithoutPassword, error: null });
   } catch (error) {
-    res.status(500).json({ error: "Password yenilenerken xeta bas verdi.", data: null });
+    res
+      .status(500)
+      .json({ error: "Password yenilenerken xeta bas verdi.", data: null });
   }
 };
 
@@ -251,9 +268,18 @@ const deleteUser: RequestHandler = async (req, res) => {
 
     res.status(200).json({ data: "User deleted successfully.", error: null });
   } catch (error) {
-    res.status(500).json({ error: "Istifadeci silinerken xeta bas verdi.", data: null });
+    res
+      .status(500)
+      .json({ error: "Istifadeci silinerken xeta bas verdi.", data: null });
   }
 };
 
-
-export { createUser, getUsers, getUserById, updateUser, deleteUser, updateUserPassword, getAttendants };
+export {
+  createUser,
+  getUsers,
+  getUserById,
+  updateUser,
+  deleteUser,
+  updateUserPassword,
+  getAttendants,
+};

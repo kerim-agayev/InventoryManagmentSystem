@@ -14,58 +14,114 @@ datasource db {
 }
 
 //? customer
+// model Customer {
+//   id       String    @id @default(auto()) @map("_id") @db.ObjectId
+//   name     String    @unique
+//   email    String
+//   phone     String 
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+//   // author   User      @relation(fields: [authorId], references: [id])
+//   // authorId String    @db.ObjectId
+//   // comments Comment[]
+// }
 model Customer {
-  id       String    @id @default(auto()) @map("_id") @db.ObjectId
-  name     String    @unique
-  email    String
-  phone     String 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  // author   User      @relation(fields: [authorId], references: [id])
-  // authorId String    @db.ObjectId
-  // comments Comment[]
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  customerType   CustomerType
+  firstName      String
+  lastName       String
+  email          String       @unique
+  phone          String       @unique
+  nationalID     String       @unique
+  gender         Gender
+  maxCreditLimit Float
+  maxCreditDays  Int
+  taxPin         String?
+  dob            DateTime?    @default(now())
+  country        String
+  location       String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 }
 
+//? enum customer type
+enum CustomerType {
+  RETAIL
+  WHOLESALE
+  DISTRIBUTOR
+  OTHER
+}
+
+//? user
 model User {
-  id        String     @id @default(auto()) @map("_id") @db.ObjectId
-  email     String  @unique
-  username  String  @unique
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  email     String    @unique
+  username  String    @unique
   password  String
   firstName String
   lastName  String
-  phone     String @unique
+  phone     String    @unique
   dob       DateTime?
   gender    Gender
   image     String?
-  role     Role    @default(ATTENDANT)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  role      Role      @default(ATTENDANT)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   shops     Shop[]
 }
 
+//? enum gender
 enum Gender {
   MALE
   FEMALE
 }
 
+//? enum role
 enum Role {
   ADMIN
   ATTENDANT
 }
 
 //? shop
-// prisma/schema.prisma
 model Shop {
-  id          String  @id @default(auto()) @map("_id") @db.ObjectId // Unique ID
-  name        String
-  slug        String @unique
-  location    String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  adminId     String   @db.ObjectId
-  admin       User    @relation(fields: [adminId], references: [id])
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId // Unique ID
+  name         String
+  slug         String   @unique
+  location     String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  adminId      String   @db.ObjectId
+  admin        User     @relation(fields: [adminId], references: [id])
   attendantIds String[] @db.ObjectId
- 
 }
 
+//? supplier
+model Supplier {
+  id                 String       @id @default(auto()) @map("_id") @db.ObjectId
+  supplierType       SupplierType
+  name               String
+  contactPerson      String
+  location           String
+  rating             Float
+  country            String
+  phone              String?      @unique
+  email              String?      @unique
+  website            String?
+  taxPin             String?     
+  registrationNumber String?       @unique
+  bankAccountNumber  String?
+  paymentTerms       String?      
+  logo               String?   @default("https://utfs.io/f/a25ac16b-ae35-40c6-8d12-516303b22d66-1nq2cb.png")
+  creditScore        Float?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+}
 
+//? supplier type
+enum SupplierType {
+  MANUFACTURER
+  DISTRIBUTOR
+  WHOLESALER
+  RETAILER
+  OTHER
+}
