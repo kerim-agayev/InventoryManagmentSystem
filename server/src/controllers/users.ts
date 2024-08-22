@@ -127,16 +127,52 @@ const updateUser: RequestHandler = async (req, res) => {
   } = req.body;
 
   try {
-    // check
-    const user = await db.user.findUnique({
+    //? check existing user
+    const existingUser = await db.user.findUnique({
       where: { id: id },
     });
 
-    if (!user) {
+    if (!existingUser ) {
       return res.status(404).json({ error: "User not found.", data: null });
     }
+  //? email, phone, username unique check
+  
 
-    // update user
+
+
+
+if (email && email !== existingUser?.email) {
+  const exisitingUserEmail = await db.user.findUnique({
+    where:{email}
+})
+if (exisitingUserEmail) {
+   res.status(409).json({data:null,message:'email databasede qeydiyyatda var...'})
+   return ;
+}
+}
+if(phone && phone !== existingUser?.phone) {
+const exisitingUserPhone = await db.user.findUnique({
+    where:{phone}
+})
+if (exisitingUserPhone) {
+  res.status(409).json({data:null,message:'phone databasede qeydiyyatda var...'})
+  return ;
+}
+}
+if(username && username !== existingUser?.username) {
+ const exisitingUserUsername = await db.user.findUnique({
+    where:{username}
+})
+if (exisitingUserUsername) {
+  res.status(409).json({data:null,message:'username databasede qeydiyyatda var...'})
+  return ;
+}
+  }
+
+
+
+
+    //? update user
     const updatedUser = await db.user.update({
       where: { id: id },
       data: {
