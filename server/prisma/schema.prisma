@@ -125,3 +125,18 @@ enum SupplierType {
   RETAILER
   OTHER
 }
+
+
+
+//?
+// {
+//   "email": "orxan2@mail.ru",
+//   "username": "orxan",
+//   "password": "12345",
+//   "firstName": "John",
+//   "lastName": "Doe",
+//   "phone": "+1233567893",
+//   "gender": "MALE",
+//   "image": "https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg",
+//   "role": "ATTENDANT"
+// }

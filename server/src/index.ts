@@ -4,6 +4,7 @@ import customerRouter from "./routes/customer";
 import userRouter from "./routes/user";
 import shopRouter from "./routes/shop";
 import supplierRouter from "./routes/supplier";
+import loginRouter from "./routes/login";
 
 
 require("dotenv").config();
@@ -31,5 +32,7 @@ app.use("/api/v1", userRouter)
 app.use("/api/v1", shopRouter)
 //? supplier
 app.use("/api/v1", supplierRouter)
+//? auth
+app.use("/api/v1", loginRouter)
 // app.get("/api/v1/customers", getCustomers);
 // app.get("/api/v2/customers", getV2Customers);
