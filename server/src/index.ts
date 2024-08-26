@@ -5,10 +5,14 @@ import userRouter from "./routes/user";
 import shopRouter from "./routes/shop";
 import supplierRouter from "./routes/supplier";
 import loginRouter from "./routes/login";
+import categoryRouter from "./routes/category";
+import unitRouter from "./routes/unit";
+import brandRouter from "./routes/brand";
+import productRouter from "./routes/product";
 
 
 require("dotenv").config();
-const cors = require("cors");
+const cors = require("cors"); 
 const app = express();
 
 app.use(cors());
@@ -34,5 +38,15 @@ app.use("/api/v1", shopRouter)
 app.use("/api/v1", supplierRouter)
 //? auth
 app.use("/api/v1", loginRouter)
+//? brand
+app.use("/api/v1", brandRouter)
+//? unit
+app.use("/api/v1", unitRouter)
+//? category
+app.use("/api/v1", categoryRouter)
+//? product
+app.use("/api/v1", productRouter)
+
+
 // app.get("/api/v1/customers", getCustomers);
 // app.get("/api/v2/customers", getV2Customers);

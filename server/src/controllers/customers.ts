@@ -1,5 +1,5 @@
 import { db } from "@/db/db";
-import { Request, Response, RequestHandler } from "express";
+import { RequestHandler } from "express";
 import { CustomerType, Gender } from "@prisma/client"; //
 
 const getCustomers: RequestHandler = async (req, res) => {

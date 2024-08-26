@@ -12,19 +12,7 @@ datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")
 }
-
-//? customer
-// model Customer {
-//   id       String    @id @default(auto()) @map("_id") @db.ObjectId
-//   name     String    @unique
-//   email    String
-//   phone     String 
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-//   // author   User      @relation(fields: [authorId], references: [id])
-//   // authorId String    @db.ObjectId
-//   // comments Comment[]
-// }
+//? customer +
 model Customer {
   id             String       @id @default(auto()) @map("_id") @db.ObjectId
   customerType   CustomerType
@@ -52,7 +40,7 @@ enum CustomerType {
   OTHER
 }
 
-//? user
+//? user +
 model User {
   id        String    @id @default(auto()) @map("_id") @db.ObjectId
   email     String    @unique
@@ -82,7 +70,7 @@ enum Role {
   ATTENDANT
 }
 
-//? shop
+//? shop +
 model Shop {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId // Unique ID
   name         String
@@ -95,7 +83,7 @@ model Shop {
   attendantIds String[] @db.ObjectId
 }
 
-//? supplier
+//? supplier +
 model Supplier {
   id                 String       @id @default(auto()) @map("_id") @db.ObjectId
   supplierType       SupplierType
@@ -107,14 +95,16 @@ model Supplier {
   phone              String?      @unique
   email              String?      @unique
   website            String?
-  taxPin             String?     
-  registrationNumber String?       @unique
+  taxPin             String?
+  registrationNumber String?      @unique
   bankAccountNumber  String?
-  paymentTerms       String?      
-  logo               String?   @default("https://utfs.io/f/a25ac16b-ae35-40c6-8d12-516303b22d66-1nq2cb.png")
+  paymentTerms       String?
+  logo               String?      @default("https://utfs.io/f/a25ac16b-ae35-40c6-8d12-516303b22d66-1nq2cb.png")
   creditScore        Float?
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
+  //? relation
+  Products            Product[]
 }
 
 //? supplier type
@@ -126,7 +116,88 @@ enum SupplierType {
   OTHER
 }
 
+//? kategoriya +
+model Category {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  slug        String  @unique
+  //description String?
+  //? relations
+  Products     Product[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
 
+//? vahid +
+model Unit {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  abbreviation String
+  slug        String  @unique
+  //? relation
+  Products      Product[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+//? marka +
+model Brand {
+  id      String    @id @default(auto()) @map("_id") @db.ObjectId
+  name    String
+  slug        String  @unique
+  //? relation
+  Products Product[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+//? product
+model Product {
+  id           String  @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  sku          String  @unique
+  productCode  String  @unique// new unique
+  description  String?
+  slug        String  @unique
+  //?numbers
+  quantity     Int
+  unitPrice    Float
+  costPrice    Float
+  reorderPoint Int
+  weight       Float?
+  taxRate      Float?
+    //?numbers end
+  imageUrl     String
+  dimensions   String?
+  notes        String?
+  //? new added expiryDate and alertQty and batchNumber and stockQty and barCode
+  expiryDate      DateTime 
+   //?numbers     
+  alertQty    Int
+  stockQty    Int
+   //?numbers end
+  batchNumber   String?
+   barCode  String  @unique //? new unique
+  //? relations
+
+  //? category 
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId String   @db.ObjectId
+
+  //? unit
+  unit   Unit   @relation(fields: [unitId], references: [id])
+  unitId String @db.ObjectId
+
+  //? brand
+  brand   Brand  @relation(fields: [brandId], references: [id])
+  brandId String @db.ObjectId
+
+  //? supplier
+  supplier   Supplier @relation(fields: [supplierId], references: [id])
+  supplierId String   @db.ObjectId
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
 
 //?
 // {
