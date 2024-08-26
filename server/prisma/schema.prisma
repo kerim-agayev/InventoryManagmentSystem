@@ -166,11 +166,11 @@ model Product {
   weight       Float?
   taxRate      Float?
     //?numbers end
-  imageUrl     String
+  imageUrl     String?    @default("https://utfs.io/f/044957a4-b8a0-405e-904f-0be7c0f5dc8c-oo9z3s.png")
   dimensions   String?
   notes        String?
   //? new added expiryDate and alertQty and batchNumber and stockQty and barCode
-  expiryDate      DateTime 
+  expiryDate      DateTime?  @default("2025-01-01T00:00:00.000Z")
    //?numbers     
   alertQty    Int
   stockQty    Int

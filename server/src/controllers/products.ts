@@ -119,7 +119,7 @@ export const createProduct: RequestHandler = async (req, res) => {
         unitPrice,
         costPrice,
         reorderPoint,
-        imageUrl,
+        imageUrl: imageUrl ?? "https://utfs.io/f/044957a4-b8a0-405e-904f-0be7c0f5dc8c-oo9z3s.png",
         weight,
         dimensions,
         taxRate,
@@ -129,7 +129,7 @@ export const createProduct: RequestHandler = async (req, res) => {
         brandId,
         supplierId,
         description,
-        expiryDate,
+        expiryDate: expiryDate ?? new Date("2025-01-01T00:00:00.000Z"), // default
         alertQty,
         stockQty,
         batchNumber,
