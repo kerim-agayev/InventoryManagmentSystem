@@ -73,6 +73,10 @@ export const createProduct: RequestHandler = async (req, res) => {
       stockQty,
       batchNumber,
       barCode,
+      wholeSalePrice,
+      shopId
+      
+      
     } = req.body;
 
     // Unique alanlar için kontroller
@@ -134,6 +138,8 @@ export const createProduct: RequestHandler = async (req, res) => {
         stockQty,
         batchNumber,
         barCode,
+        wholeSalePrice:wholeSalePrice,
+        shopId
       },
     });
 
@@ -174,6 +180,9 @@ export const updateProduct: RequestHandler = async (req, res) => {
       stockQty,
       batchNumber,
       barCode,
+      //? new
+      wholeSalePrice,
+      shopId
     } = req.body;
 
     // Ürün mevcut mu kontrol et
@@ -252,6 +261,8 @@ export const updateProduct: RequestHandler = async (req, res) => {
         stockQty: stockQty ?? existingProduct.stockQty,
         batchNumber: batchNumber ?? existingProduct.batchNumber,
         barCode: barCode ?? existingProduct.barCode,
+        wholeSalePrice: wholeSalePrice ?? existingProduct.wholeSalePrice,
+        shopId: shopId ?? existingProduct.shopId,
       },
     });
 

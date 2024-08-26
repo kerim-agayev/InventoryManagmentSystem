@@ -12,24 +12,30 @@ datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")
 }
+
 //? customer +
 model Customer {
-  id             String       @id @default(auto()) @map("_id") @db.ObjectId
-  customerType   CustomerType
-  firstName      String
-  lastName       String
-  email          String       @unique
-  phone          String       @unique
-  nationalID     String       @unique
-  gender         Gender
-  maxCreditLimit Float
-  maxCreditDays  Int
-  taxPin         String?
-  dob            DateTime?    @default(now())
-  country        String
-  location       String
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  id                 String       @id @default(auto()) @map("_id") @db.ObjectId
+  customerType       CustomerType
+  firstName          String
+  lastName           String
+  email              String       @unique
+  phone              String       @unique
+  nationalID         String       @unique
+  gender             Gender
+  maxCreditLimit     Float
+  maxCreditDays      Int
+  //? new property
+  unpaidCreditAmount Int?         @default(0)
+  //? new end
+  taxPin             String?
+  dob                DateTime?    @default(now())
+  country            String
+  location           String
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  //? relation new
+  Sales              Sale[]
 }
 
 //? enum customer type
@@ -72,15 +78,17 @@ enum Role {
 
 //? shop +
 model Shop {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId // Unique ID
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId // Unique ID
   name         String
-  slug         String   @unique
+  slug         String    @unique
   location     String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  adminId      String   @db.ObjectId
-  admin        User     @relation(fields: [adminId], references: [id])
-  attendantIds String[] @db.ObjectId
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  adminId      String    @db.ObjectId
+  admin        User      @relation(fields: [adminId], references: [id])
+  attendantIds String[]  @db.ObjectId
+  //? relation
+  Products     Product[]
 }
 
 //? supplier +
@@ -104,7 +112,7 @@ model Supplier {
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
   //? relation
-  Products            Product[]
+  Products           Product[]
 }
 
 //? supplier type
@@ -118,70 +126,68 @@ enum SupplierType {
 
 //? kategoriya +
 model Category {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  name       String
-  slug        String  @unique
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  slug      String    @unique
   //description String?
   //? relations
-  Products     Product[]
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  Products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 //? vahid +
 model Unit {
   id           String    @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
+  name         String
   abbreviation String
-  slug        String  @unique
+  slug         String    @unique
   //? relation
-  Products      Product[]
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  Products     Product[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 }
 
 //? marka +
 model Brand {
-  id      String    @id @default(auto()) @map("_id") @db.ObjectId
-  name    String
-  slug        String  @unique
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  slug      String    @unique
   //? relation
-  Products Product[]
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  Products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
+
 //? product
 model Product {
-  id           String  @id @default(auto()) @map("_id") @db.ObjectId
-  name         String
-  sku          String  @unique
-  productCode  String  @unique// new unique
-  description  String?
-  slug        String  @unique
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  name           String
+  sku            String    @unique
+  productCode    String    @unique // new unique
+  description    String?
+  slug           String    @unique
   //?numbers
-  quantity     Int
-  unitPrice    Float
-  costPrice    Float
-  reorderPoint Int
-  weight       Float?
-  taxRate      Float?
-    //?numbers end
-  imageUrl     String?    @default("https://utfs.io/f/044957a4-b8a0-405e-904f-0be7c0f5dc8c-oo9z3s.png")
-  dimensions   String?
-  notes        String?
-  //? new added expiryDate and alertQty and batchNumber and stockQty and barCode
-  expiryDate      DateTime?  @default("2025-01-01T00:00:00.000Z")
-   //?numbers     
-  alertQty    Int
-  stockQty    Int
-   //?numbers end
-  batchNumber   String?
-   barCode  String  @unique //? new unique
+  unitPrice      Float
+  costPrice      Float
+  reorderPoint   Int
+  weight         Float?
+  taxRate        Float?
+  quantity       Int
+  alertQty       Int
+  stockQty       Int
+  //?numbers end
+  imageUrl       String?   @default("https://utfs.io/f/044957a4-b8a0-405e-904f-0be7c0f5dc8c-oo9z3s.png")
+  dimensions     String?
+  notes          String?
+  expiryDate     DateTime? @default("2025-01-01T00:00:00.000Z")
+  batchNumber    String?
+  barCode        String    @unique //? new unique
+  wholeSalePrice Int?      @default(0) //? TOPDAN SATIS QIYMETI
   //? relations
-
   //? category 
-  category   Category @relation(fields: [categoryId], references: [id])
-  categoryId String   @db.ObjectId
+  category       Category  @relation(fields: [categoryId], references: [id])
+  categoryId     String    @db.ObjectId
 
   //? unit
   unit   Unit   @relation(fields: [unitId], references: [id])
@@ -195,11 +201,80 @@ model Product {
   supplier   Supplier @relation(fields: [supplierId], references: [id])
   supplierId String   @db.ObjectId
 
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  //? shop - new relation
+  shop      Shop     @relation(fields: [shopId], references: [id])
+  shopId    String   @db.ObjectId
+  //? relation end
+  //? time
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  //? relation - 2
+  SaleItems SaleItem[]
 }
 
-//?
+//? sale item
+model SaleItem {
+  id            String  @id @default(auto()) @map("_id") @db.ObjectId
+  //!
+  qty           Int
+  salePrice     Float
+  productName   String
+  productImage  String
+  customerName  String
+  customerEmail String?
+
+  //? relation
+  saleId    String  @db.ObjectId
+  sale      Sale    @relation(fields: [saleId], references: [id])
+  productId String  @db.ObjectId
+  product   Product @relation(fields: [productId], references: [id])
+
+  //? time
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//? sale
+model Sale {
+  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+  customerName    String
+  orderNumber     String        @unique
+  customerEmail   String?
+  orderAmount     Int? //? 500
+  balanceAmount   Int?          @default(0) //? 200
+  paidAmount      Int? //? 300
+  orderType       String?
+  orderStatus     OrderStatus   @default(PENDING)
+  paymentStatus   PaymentStatus
+  paymentMethod   String
+  transactionCode String?
+  //? relation
+  customerId      String        @db.ObjectId
+  customer        Customer      @relation(fields: [customerId], references: [id])
+  SaleItems       SaleItem[]
+  //? time
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+//? enum 
+enum OrderStatus {
+  DELIVERED
+  PENDING //: Sipariş alındı ancak henüz işleme konulmadı.
+  PROCESSING //: Sipariş işleniyor, paketleniyor ya da hazırlanıyor.
+  SHIPPED //: Sipariş gönderildi ancak henüz teslim edilmedi.
+  CANCELLED //: Sipariş iptal edildi.
+  RETURNED //: Sipariş teslim alındı ancak iade edildi.
+  ON_HOLD //: Sipariş bir sebepten dolayı beklemede.
+  FAILED //: Sipariş işleme sırasında başarısız oldu.
+}
+
+enum PaymentStatus {
+  PAID
+  CREDIT
+}
+
 // {
 //   "email": "orxan2@mail.ru",
 //   "username": "orxan",

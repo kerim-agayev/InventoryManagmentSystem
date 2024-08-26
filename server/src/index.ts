@@ -9,6 +9,8 @@ import categoryRouter from "./routes/category";
 import unitRouter from "./routes/unit";
 import brandRouter from "./routes/brand";
 import productRouter from "./routes/product";
+import saleRouter from "./routes/sale";
+import saleItemRouter from "./routes/saleItem";
 
 
 require("dotenv").config();
@@ -51,6 +53,10 @@ app.use("/api/v1", unitRouter)
 app.use("/api/v1", categoryRouter)
 //? product
 app.use("/api/v1", productRouter)
+//? sale
+app.use("/api/v1", saleRouter)
+//? sale item
+app.use("/api/v1", saleItemRouter)
 
 
 // app.get("/api/v1/customers", getCustomers);

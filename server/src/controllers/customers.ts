@@ -49,6 +49,7 @@ const createCustomer: RequestHandler = async (req, res) => {
     nationalID,
     country,
     location,
+    unpaidCreditAmount,
   } = req.body;
   
   
@@ -101,6 +102,7 @@ const createCustomer: RequestHandler = async (req, res) => {
         nationalID,
         country,
         location,
+        unpaidCreditAmount
       },
     });
 
@@ -129,6 +131,7 @@ const updateCustomer: RequestHandler = async (req, res) => {
       nationalID,
       country,
       location,
+      unpaidCreditAmount
     } = req.body;
 
     // Check for unique fields
@@ -142,26 +145,27 @@ const updateCustomer: RequestHandler = async (req, res) => {
 
     // Check if the phone, email, or nationalID is already taken by another customer
 
-    // const updatedCustomer = await db.customer.update({
-    //   where: { id },
-    //   data: {
-    //     customerType,
-    //     firstName,
-    //     lastName,
-    //     phone,
-    //     gender,
-    //     maxCreditLimit,
-    //     maxCreditDays,
-    //     taxPin,
-    //     dob,
-    //     email,
-    //     nationalID,
-    //     country,
-    //     location,
-    //   },
-    // });
+    const updatedCustomer = await db.customer.update({
+      where: { id },
+      data: {
+        customerType,
+        firstName,
+        lastName,
+        phone,
+        gender,
+        maxCreditLimit,
+        maxCreditDays,
+        taxPin,
+        dob,
+        email,
+        nationalID,
+        country,
+        location,
+        unpaidCreditAmount
+      },
+    });
 
-    //return res.status(200).json(updatedCustomer);
+    return res.status(200).json(updatedCustomer);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
