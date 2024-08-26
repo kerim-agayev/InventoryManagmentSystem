@@ -20,6 +20,11 @@ app.use(cors());
 const PORT = process.env.PORT || 8000;
 
 app.use(express.json());
+app.get('/', (req, res)=>{
+  res.status(200).json({
+    message:"hello"
+  })
+})
 app.listen(PORT, () => {
   // Start the server and listen on the specified port
   console.log(`Server is running on http://localhost:${PORT}`); // Log a message indicating the server is running
