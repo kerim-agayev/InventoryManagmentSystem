@@ -2,6 +2,11 @@ import { db } from "@/db/db";
 import { Request, Response, RequestHandler } from "express";
 import bcyrpt from "bcrypt";
 import { generateAccessToken } from "@/utils/generateJWT";
+import { generateResetToken } from "@/utils/generateToken";
+import { addMinutes } from "date-fns";
+import { Resend } from "resend";
+import {  generateEmailTemplate } from "@/utils/generateEmailTemplate";
+const resend = new Resend(process.env.RESEND_API_KEY );
 //? get login
 const authorizeUser: RequestHandler = async (req, res) => {
   try {
@@ -43,7 +48,7 @@ const authorizeUser: RequestHandler = async (req, res) => {
         return res.status(404).json({
             error:'Wrong Credentials',
             data:null
-        }).status(403)
+        }).status(403) 
       }
       //? destruct password
       const{password:_, ...others} = existingUser;
@@ -60,9 +65,86 @@ const authorizeUser: RequestHandler = async (req, res) => {
   }
 };
 
+const forgotPassword: RequestHandler = async (req, res) => {
+try {
+  const {email} = req.body
+  const existingEmail = await db.user.findUnique({
+    where:{
+      email
+    }
+  })
 
+  if (!existingEmail) {
+    return res.status(404).json({
+      data:null,
+      error:"bu qeydiyyatda olan email yoxdur"
+    })
+  }
+
+  const resetToken = generateResetToken().toString()
+  const resetTokenExpiry = addMinutes(new Date(), 10)
+  const currentTime = new Date()
+
+
+
+const newUpdatUser = await db.user.update({
+  where:{
+    email
+  },
+  data:{
+    resetToken,
+    resetTokenExpiry,
+    
+  }
+})
+
+//? Send Email - Resend
+const emailHtml = generateEmailTemplate(resetToken)
+const {data, error} = await resend.emails.send({
+  from:"kerim <https://bakudoors.vercel.app/>",//? verigy your domain buraya aiddi
+  to:email,
+  subject:"",
+  html:emailHtml
+})
+
+if (error) {
+  return res.status(400).json({error})
+}
+const result = {
+  userId:newUpdatUser.id,
+  emailId:data,
+}
+ return res.status(200).json({
+  message:`Password reset send to email: ${email}`,
+  data:result,
+  error:null
+})
+// Prerequisites
+// To get the most out of this guide, you’ll need to:
+
+// Create an API key
+// Verify your domain - bunlar mende yoxdu
+
+
+
+
+
+
+  // return res.status(200).json({
+  //   data:{resetToken, resetTokenExpiry, currentTime},
+  //   error:null
+  // })
+} catch (error) {
+  console.log(error)
+  return res.status(500).json({
+    data:null,
+    error:"something went wrong"
+  })
+}
+}
 
 
 export {
   authorizeUser,
+  forgotPassword
 };
