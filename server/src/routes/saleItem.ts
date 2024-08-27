@@ -18,10 +18,10 @@ saleItemRouter.get("/sale-items/:id", getSaleItemById);
 //? POST create a new sale item
 saleItemRouter.post("/sale-items", createSaleItem);
 
-//? PUT update a sale item
+//? PUT update a sale item ---
 saleItemRouter.put("/sale-items/:id", updateSaleItem);
 
-//? DELETE a sale item
+//? DELETE a sale item ---
 saleItemRouter.delete("/sale-items/:id", deleteSaleItem);
 
 export default saleItemRouter;

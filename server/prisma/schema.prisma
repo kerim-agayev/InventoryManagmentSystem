@@ -221,9 +221,6 @@ model SaleItem {
   salePrice     Float
   productName   String
   productImage  String
-  customerName  String
-  customerEmail String?
-
   //? relation
   saleId    String  @db.ObjectId
   sale      Sale    @relation(fields: [saleId], references: [id])
@@ -238,16 +235,15 @@ model SaleItem {
 //? sale
 model Sale {
   id              String        @id @default(auto()) @map("_id") @db.ObjectId
-  customerName    String
-  orderNumber     String        @unique
+  customerName    String?
+  saleNumber     String        @unique//? sale Number
   customerEmail   String?
-  orderAmount     Int? //? 500
+  saleAmount     Int? //? 500  //? sale Amount
   balanceAmount   Int?          @default(0) //? 200
   paidAmount      Int? //? 300
-  orderType       String?
-  orderStatus     OrderStatus   @default(PENDING)
-  paymentStatus   PaymentStatus
-  paymentMethod   String
+  //orderStatus     OrderStatus   @default(PENDING)
+  saleType         SaleType//? saletype
+  paymentMethod   PaymentMethod  @default(CASH)
   transactionCode String?
   //? relation
   customerId      String        @db.ObjectId
@@ -259,18 +255,12 @@ model Sale {
 }
 
 //? enum 
-enum OrderStatus {
-  DELIVERED
-  PENDING //: Sipariş alındı ancak henüz işleme konulmadı.
-  PROCESSING //: Sipariş işleniyor, paketleniyor ya da hazırlanıyor.
-  SHIPPED //: Sipariş gönderildi ancak henüz teslim edilmedi.
-  CANCELLED //: Sipariş iptal edildi.
-  RETURNED //: Sipariş teslim alındı ancak iade edildi.
-  ON_HOLD //: Sipariş bir sebepten dolayı beklemede.
-  FAILED //: Sipariş işleme sırasında başarısız oldu.
-}
 
-enum PaymentStatus {
+enum PaymentMethod {
+CASH
+MOBILEMONEY
+}
+enum SaleType {//? sale type
   PAID
   CREDIT
 }

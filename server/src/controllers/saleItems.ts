@@ -34,10 +34,15 @@ export const getSaleItemById: RequestHandler = async (req, res) => {
   }
 };
 
-//? Create a new sale item
+//? Create a new sale and sale item
 export const createSaleItem: RequestHandler = async (req, res) => {
   try {
-    const { qty, salePrice, productName, productImage, customerName, customerEmail, saleId, productId } = req.body;
+    const {  qty,
+      salePrice,
+      productName,
+      productImage,
+      saleId,
+      productId} = req.body;
 
     const newSaleItem = await db.saleItem.create({
       data: {
@@ -45,8 +50,6 @@ export const createSaleItem: RequestHandler = async (req, res) => {
         salePrice,
         productName,
         productImage,
-        customerName,
-        customerEmail,
         saleId,
         productId,
       },
@@ -59,11 +62,11 @@ export const createSaleItem: RequestHandler = async (req, res) => {
   }
 };
 
-//? Update a sale item
+//? Update a sale item ---
 export const updateSaleItem: RequestHandler = async (req, res) => {
   try {
     const id = req.params.id;
-    const { qty, salePrice, productName, productImage, customerName, customerEmail, saleId, productId } = req.body;
+    const { qty, salePrice, productName, productImage,saleId, productId } = req.body;
 
     const existingSaleItem = await db.saleItem.findUnique({
       where: { id },
@@ -80,8 +83,6 @@ export const updateSaleItem: RequestHandler = async (req, res) => {
         salePrice: salePrice ?? existingSaleItem.salePrice,
         productName: productName ?? existingSaleItem.productName,
         productImage: productImage ?? existingSaleItem.productImage,
-        customerName: customerName ?? existingSaleItem.customerName,
-        customerEmail: customerEmail ?? existingSaleItem.customerEmail,
         saleId: saleId ?? existingSaleItem.saleId,
         productId: productId ?? existingSaleItem.productId,
       },
@@ -94,7 +95,7 @@ export const updateSaleItem: RequestHandler = async (req, res) => {
   }
 };
 
-//? Delete a sale item
+//? Delete a sale item ---
 export const deleteSaleItem: RequestHandler = async (req, res) => {
   try {
     const id = req.params.id;

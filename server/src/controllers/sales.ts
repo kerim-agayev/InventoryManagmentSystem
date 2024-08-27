@@ -1,4 +1,6 @@
 import { db } from "@/db/db";
+import { SaleRequestBody } from "@/types/types";
+import { generateOrderNumber } from "@/utils/generateSaleNumber";
 import { RequestHandler } from "express";
 
 //? Get all sales
@@ -19,7 +21,96 @@ const getSales: RequestHandler = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+//? transaction
+const createSaleWithItems: RequestHandler = async (req, res) => {
+  const {
+    customerId,
+    saleAmount,
+    balanceAmount,
+    paidAmount,
+    saleType,
+    paymentMethod,
+    transactionCode,
+    customerName,
+    customerEmail,
+    saleItems,
+  }: SaleRequestBody = req.body;
 
+  try {
+    const saleId = await db.$transaction(async (transaction) => {
+      // Create the Sale
+      const sale = await transaction.sale.create({
+        data: {
+          customerId,
+          saleNumber: generateOrderNumber(),
+          saleAmount,
+          balanceAmount,
+          paidAmount,
+          saleType,
+          paymentMethod,
+          transactionCode,
+          customerName,
+          customerEmail,
+        },
+      });
+
+      if (saleItems && saleItems.length > 0) {
+        for (const item of saleItems) {
+          // Update Product stock quantity
+          const updatedProduct = await transaction.product.update({
+            where: { id: item.productId },
+            data: {
+              stockQty: {
+                decrement: item.qty,
+              },
+            },
+          });
+
+          if (!updatedProduct) {
+            // throw new Error(`Failed to update stock for product ID: ${item.productId}`);
+            return res
+              .status(500)
+              .json({ error: "FAAILED TO UPDATE PRODUCT", data: null });
+          }
+
+          // Create Sale Item
+          const saleItem = await transaction.saleItem.create({
+            data: {
+              qty: item.qty,
+              salePrice: item.salePrice,
+              productName: item.productName,
+              productImage: item.productImage,
+              saleId: sale.id,
+              productId: item.productId,
+            },
+          });
+
+          if (!saleItem) {
+            return res
+              .status(500)
+              .json({ error: "FAAILED TO CREATE SALE ITEM", data: null });
+          }
+        }
+      }
+
+      return sale.id;
+    });
+
+    const sale = await db.sale.findUnique({
+      where: {
+        id: saleId as string,
+      },
+      include: {
+        SaleItems: true,
+      },
+    });
+    // console.log(savedLineOrder);
+    return res.status(201).json({ error: null, data: sale });
+  } catch (error) {
+    console.error("Transaction error:", error);
+    return res.status(500).json({ error: "something went wrong", data: null });
+  }
+};
 //? Get sale by ID
 const getSaleById: RequestHandler = async (req, res) => {
   try {
@@ -46,50 +137,29 @@ const getSaleById: RequestHandler = async (req, res) => {
 const createSale: RequestHandler = async (req, res) => {
   try {
     const {
-      customerId,
-      orderNumber,
-      orderAmount,
-      balanceAmount,
-      paidAmount,
-      orderType,
-      orderStatus,
-      paymentStatus,
-      paymentMethod,
-      transactionCode,
       customerName,
       customerEmail,
-    //   SaleItems,
+      saleAmount,
+      balanceAmount,
+      paidAmount,
+      saleType,
+      paymentMethod,
+      transactionCode,
+      customerId,
     } = req.body;
 
-    //? check unique
-    const existingOrderNumber = await db.sale.findUnique({
-        where:{
-            orderNumber
-        }
-    })
-    if (existingOrderNumber) {
-        return res.status(400).json({
-            data:null,
-            error:"order number qeydiyyatda var."
-        })
-    }
     const newSale = await db.sale.create({
       data: {
-        customerId,
-        orderNumber,
-        orderAmount,
-        balanceAmount,
-        paidAmount,
-        orderType,
-        orderStatus,
-        paymentStatus,
-        paymentMethod,
         customerName,
         customerEmail,
+        saleAmount,
+        balanceAmount,
+        paidAmount,
+        saleType,
+        paymentMethod,
         transactionCode,
-        // SaleItems: {
-        //   create: SaleItems,
-        // },
+        customerId,
+        saleNumber: generateOrderNumber(),
       },
       include: {
         SaleItems: true,
@@ -103,21 +173,20 @@ const createSale: RequestHandler = async (req, res) => {
   }
 };
 
-//? Update a sale
+//? Update a sale ---
 const updateSale: RequestHandler = async (req, res) => {
   try {
     const id = req.params.id;
     const {
-      customerId,
-      orderNumber,
-      orderAmount,
+      customerName,
+      customerEmail,
+      saleAmount,
       balanceAmount,
       paidAmount,
-      orderType,
-      orderStatus,
-      paymentStatus,
+      saleType,
       paymentMethod,
       transactionCode,
+      customerId,
     } = req.body;
 
     const existingSale = await db.sale.findUnique({
@@ -125,37 +194,21 @@ const updateSale: RequestHandler = async (req, res) => {
     });
 
     if (!existingSale) {
-        return res.status(404).json({ message: "Sale not found" });
-      }
-
-
-      if (orderNumber && orderNumber != existingSale.orderNumber) {
-        const existingOrder = await db.sale.findUnique({
-            where: { orderNumber },
-          });
-          if (existingOrder) {
-            return res.status(409).json({ message: "Sale with this ORDER NUMBER already exists" });
-          }
-
-
-      }
-  
-  
-    
+      return res.status(404).json({ message: "Sale not found" });
+    }
 
     const updatedSale = await db.sale.update({
       where: { id },
       data: {
-        customerId:customerId ?? existingSale?.customerId,
-        orderNumber:orderNumber ?? existingSale?.orderNumber,
-        orderAmount:orderAmount ?? existingSale?.orderAmount,
-        balanceAmount:balanceAmount ?? existingSale?.balanceAmount,
-        paidAmount:paidAmount ?? existingSale?.paidAmount,
-        orderType:orderType ?? existingSale?.orderType,
-        orderStatus:orderStatus ?? existingSale?.orderStatus,
-        paymentStatus:paymentStatus ?? existingSale?.paymentStatus,
-        paymentMethod:paymentMethod ?? existingSale?.paymentMethod,
-        transactionCode:transactionCode ?? existingSale?.transactionCode,
+        customerId: customerId ?? existingSale?.customerId,
+        balanceAmount: balanceAmount ?? existingSale?.balanceAmount,
+        paidAmount: paidAmount ?? existingSale?.paidAmount,
+        saleType: saleType ?? existingSale?.saleType,
+        paymentMethod: paymentMethod ?? existingSale?.paymentMethod,
+        transactionCode: transactionCode ?? existingSale?.transactionCode,
+        customerName: customerName ?? existingSale.customerName,
+        customerEmail: customerEmail ?? existingSale.customerEmail,
+        saleAmount: saleAmount ?? existingSale.saleAmount,
       },
       include: {
         SaleItems: true,
@@ -169,7 +222,7 @@ const updateSale: RequestHandler = async (req, res) => {
   }
 };
 
-//? Delete a sale
+//? Delete a sale ---
 const deleteSale: RequestHandler = async (req, res) => {
   try {
     const id = req.params.id;
@@ -193,5 +246,11 @@ const deleteSale: RequestHandler = async (req, res) => {
   }
 };
 
-
-export{createSale, deleteSale, updateSale, getSaleById, getSales}
+export {
+  createSaleWithItems,
+  deleteSale,
+  updateSale,
+  getSaleById,
+  createSale,
+  getSales,
+};
