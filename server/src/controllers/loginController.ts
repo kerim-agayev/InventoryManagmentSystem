@@ -145,10 +145,10 @@ const result = {
 
 const verifyToken: RequestHandler = async (req, res) => {
   try {
-    const{resetToken } = req.params;
+    const{token } = req.params;//? resetToken
     const existingUser = await db.user.findFirst({
       where:{
-        resetToken,
+        resetToken:token,
         resetTokenExpiry:{gte: new Date()}
       }
     })
@@ -171,11 +171,56 @@ const verifyToken: RequestHandler = async (req, res) => {
 
 
 
+const changePassword: RequestHandler = async (req, res) => {
+try {
+  const{token} = req.params;//? resetToken
+  const{newPassword } = req.body;
 
+const existingUser = await db.user.findFirst({
+  where:{
+    resetToken:token,
+    resetTokenExpiry:{gte:new Date()}
+  }
+})
+
+if (!existingUser) {
+  return res.status(400).json({
+    data:null,
+    error:"Invalid or expiry token"
+  })
+}
+
+
+
+const hashedPassword = await bcyrpt.hash(newPassword, 10)
+await db.user.update({
+  where:{
+    id:existingUser.id
+  },
+  data:{
+    resetToken:null,
+    resetTokenExpiry:null,
+    password:hashedPassword
+  }
+})
+
+
+return res.status(200).json({
+  error:null,
+  data:"Password changed successfully"
+})
+} catch (error) {
+  return res.status(500).json({
+    data:null,
+    error:"Server error"
+  })
+}
+}
 
 
 export {
   authorizeUser,
   forgotPassword,
-  verifyToken
+  verifyToken,
+  changePassword
 };
