@@ -112,7 +112,7 @@ if (error) {
 }
 const result = {
   userId:newUpdatUser.id,
-  emailId:data,
+  emailId:data?.id,
 }
  return res.status(200).json({
   message:`Password reset send to email: ${email}`,
@@ -143,8 +143,39 @@ const result = {
 }
 }
 
+const verifyToken: RequestHandler = async (req, res) => {
+  try {
+    const{resetToken } = req.params;
+    const existingUser = await db.user.findFirst({
+      where:{
+        resetToken,
+        resetTokenExpiry:{gte: new Date()}
+      }
+    })
+
+    if (!existingUser) {
+      return res.status(400).json({
+        data:null,
+        error:"Invalid or expiry token"
+      })
+    }
+
+    return res.status(200).json({
+      error:null,
+      data:"Token is Valid"
+    })
+  } catch (error) {
+    
+  }
+}
+
+
+
+
+
 
 export {
   authorizeUser,
-  forgotPassword
+  forgotPassword,
+  verifyToken
 };
