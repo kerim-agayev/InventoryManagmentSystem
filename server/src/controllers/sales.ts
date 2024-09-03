@@ -3,7 +3,14 @@ import { SaleRequestBody } from "@/types/types";
 import { generateOrderNumber } from "@/utils/generateSaleNumber";
 import { RequestHandler } from "express";
 import { updateCustomer } from "./customers";
-
+import {
+  startOfDay,
+  startOfWeek,
+  startOfMonth,
+  endOfDay,
+  endOfWeek,
+  endOfMonth,
+} from "date-fns";
 //? Get all sales
 const getSales: RequestHandler = async (req, res) => {
   try {
@@ -288,6 +295,8 @@ const deleteSale: RequestHandler = async (req, res) => {
   }
 };
 
+
+
 export {
   createSaleWithItems,
   deleteSale,
@@ -295,4 +304,5 @@ export {
   getSaleById,
   createSale,
   getSales,
+
 };

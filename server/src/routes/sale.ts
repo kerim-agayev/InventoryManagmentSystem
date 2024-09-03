@@ -5,8 +5,10 @@ import {
   createSaleWithItems,
   updateSale,
   deleteSale,
-  createSale
+  createSale,
 } from "../controllers/sales";
+import { getShopSalesAnalitcs, getShopsSales } from "@/controllers/saleAnalitycs";
+
 
 const router = express.Router();
 
@@ -27,5 +29,11 @@ router.put("/sales/:id", updateSale);
 
 //? Delete a sale ---
 router.delete("/sales/:id", deleteSale);
+//? analitycs
+//? Get shop analitycs
+router.get("/sales/shop/:shopId", getShopSalesAnalitcs);
+
+//? Get all shop analitycs
+router.get("/sale/all-shops", getShopsSales);
 
 export default router;
