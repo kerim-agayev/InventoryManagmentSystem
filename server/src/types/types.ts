@@ -14,6 +14,7 @@ export interface SaleRequestBody {
     saleAmount: number;
     balanceAmount: number;
     paidAmount: number;
+    shopId:string;
     saleType: SaleType; // or a more specific type if you have predefined sale types
     paymentMethod: PaymentMethod; // or an enum if you have predefined methods
     transactionCode: string;

@@ -2,6 +2,7 @@ import { db } from "@/db/db";
 import { SaleRequestBody } from "@/types/types";
 import { generateOrderNumber } from "@/utils/generateSaleNumber";
 import { RequestHandler } from "express";
+import { updateCustomer } from "./customers";
 
 //? Get all sales
 const getSales: RequestHandler = async (req, res) => {
@@ -30,6 +31,7 @@ const createSaleWithItems: RequestHandler = async (req, res) => {
     paidAmount,
     saleType,
     paymentMethod,
+    shopId,
     transactionCode,
     customerName,
     customerEmail,
@@ -38,6 +40,42 @@ const createSaleWithItems: RequestHandler = async (req, res) => {
 
   try {
     const saleId = await db.$transaction(async (transaction) => {
+
+      if (balanceAmount>0) {
+        //? if the customer  is allowed to take credit
+        const existingCustomer = await transaction.customer.findUnique({
+           where:{
+            id:customerId
+           }
+        })
+        if (!existingCustomer) {
+          return res.status(404).json({
+            error:"Customer not found", data:null
+          })
+        }
+        if (balanceAmount > existingCustomer?.maxCreditLimit) {
+          return res.status(400).json({
+            error:`This Customer is not elligible for this credit: ${balanceAmount}`, data:null
+          })
+        }
+        //? update the customer unpaid amount
+        //? update the customer maxCreditAmount
+        const updatedCustomer = await transaction.customer.update({
+          where:{
+            id:customerId
+          },
+          data:{
+            unpaidCreditAmount:existingCustomer.unpaidCreditAmount +  balanceAmount
+            ,
+            maxCreditLimit:{
+              decrement:balanceAmount
+            }
+          }
+        })
+        if (!updatedCustomer) {
+          return res.status(500).json({ error: "Failed to update Customer credit details", data: null });
+        }
+      }
       // Create the Sale
       const sale = await transaction.sale.create({
         data: {
@@ -47,10 +85,12 @@ const createSaleWithItems: RequestHandler = async (req, res) => {
           balanceAmount,
           paidAmount,
           saleType,
+          shopId,
           paymentMethod,
           transactionCode,
           customerName,
           customerEmail,
+         
         },
       });
 
@@ -146,6 +186,7 @@ const createSale: RequestHandler = async (req, res) => {
       paymentMethod,
       transactionCode,
       customerId,
+      shopId
     } = req.body;
 
     const newSale = await db.sale.create({
@@ -159,6 +200,7 @@ const createSale: RequestHandler = async (req, res) => {
         paymentMethod,
         transactionCode,
         customerId,
+        shopId,
         saleNumber: generateOrderNumber(),
       },
       include: {

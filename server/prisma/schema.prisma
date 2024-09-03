@@ -23,10 +23,10 @@ model Customer {
   phone              String       @unique
   nationalID         String       @unique
   gender             Gender
-  maxCreditLimit     Float
-  maxCreditDays      Int
+  maxCreditLimit     Float //? 
+  maxCreditDays      Int //? 
   //? new property
-  unpaidCreditAmount Int?         @default(0)
+  unpaidCreditAmount Int        @default(0) //? 
   //? new end
   taxPin             String?
   dob                DateTime?    @default(now())
@@ -92,6 +92,7 @@ model Shop {
   attendantIds String[]  @db.ObjectId
   //? relation
   Products     Product[]
+  sales         Sale[]   // Add this relation
 }
 
 //? supplier +
@@ -241,9 +242,9 @@ model Sale {
   customerName    String?
   saleNumber     String        @unique//? sale Number
   customerEmail   String?
-  saleAmount     Int? //? 500  //? sale Amount
-  balanceAmount   Int?          @default(0) //? 200
-  paidAmount      Int? //? 300
+  saleAmount     Int? //? 500  //? sale Amount   this is the total amount from the saleItems
+  balanceAmount   Int?          @default(0) //? 200 the diffrence - saleAmount - paidAmount
+  paidAmount      Int? //? 300  //? this is the amount the customer have paid
   //orderStatus     OrderStatus   @default(PENDING)
   saleType         SaleType//? saletype
   paymentMethod   PaymentMethod  @default(CASH)
@@ -252,6 +253,8 @@ model Sale {
   customerId      String        @db.ObjectId
   customer        Customer      @relation(fields: [customerId], references: [id])
   SaleItems       SaleItem[]
+    shopId          String    @db.ObjectId // Add this field
+    shop            Shop       @relation(fields: [shopId], references: [id]) 
   //? time
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
@@ -279,3 +282,137 @@ enum SaleType {//? sale type
 //   "image": "https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg",
 //   "role": "ATTENDANT"
 // }
+
+
+
+
+
+// Model İlişkileri
+// 1. Customer (Müşteri)
+// Birincil Anahtar: id
+// İlişkiler:
+// Birden-Çok ile Sale (Satış):
+// İlişki Alanı: Sales
+// Açıklama: Bir müşteri birden fazla satış yapabilir, ancak her satış sadece bir müşteriyle ilişkilidir. Bir müşteri silindiğinde, ilişkili satışlar yetim kalır.
+// 2. User (Kullanıcı)
+// Birincil Anahtar: id
+// İlişkiler:
+// Birden-Çok ile Shop (Mağaza):
+// İlişki Alanı: shops
+// Açıklama: Bir kullanıcı (görevli) birden fazla mağaza yönetebilir, ancak her mağaza sadece bir kullanıcıya (yönetici) sahiptir. Bir kullanıcı silindiğinde, ilişkili mağazalar kalır, ancak yöneticileri olmaz.
+// Opsiyonel Alan: resetToken ve resetTokenExpiry şifre sıfırlama işlevi için.
+// 3. Shop (Mağaza)
+// Birincil Anahtar: id
+// İlişkiler:
+// Birden-Çoka ile User (Kullanıcı):
+// İlişki Alanı: adminId
+// Açıklama: Her mağazanın bir yöneticisi vardır. Bir mağaza silindiğinde, mağaza admini referansını kaybeder, ancak mağazanın kendisi kalır.
+// Birden-Çoka ile Product (Ürün):
+// İlişki Alanı: Products
+// Açıklama: Bir mağazada birden fazla ürün bulunabilir, ancak her ürün sadece bir mağazayla ilişkilidir. Bir mağaza silindiğinde, ürünler mağaza referansını kaybeder.
+// Birden-Çoka ile Sale (Satış):
+// İlişki Alanı: sales
+// Açıklama: Bir mağazada birden fazla satış olabilir, ancak her satış sadece bir mağaza ile ilişkilidir. Bir mağaza silindiğinde, ilişkili satışlar mağaza referansını kaybeder.
+// 4. Supplier (Tedarikçi)
+// Birincil Anahtar: id
+// İlişkiler:
+// Birden-Çoka ile Product (Ürün):
+// İlişki Alanı: Products
+// Açıklama: Bir tedarikçi birden fazla ürün tedarik edebilir, ancak her ürün sadece bir tedarikçiye aittir. Bir tedarikçi silindiğinde, ilişkili ürünler tedarikçi referansını kaybeder.
+// 5. Category (Kategori)
+// Birincil Anahtar: id
+// İlişkiler:
+// Birden-Çoka ile Product (Ürün):
+// İlişki Alanı: Products
+// Açıklama: Bir kategoride birden fazla ürün bulunabilir, ancak her ürün sadece bir kategoriye aittir. Bir kategori silindiğinde, ürünler kategori referansını kaybeder.
+// 6. Unit (Birim)
+// Birincil Anahtar: id
+// İlişkiler:
+// Birden-Çoka ile Product (Ürün):
+// İlişki Alanı: Products
+// Açıklama: Bir birim birden fazla üründe kullanılabilir, ancak her ürün sadece bir birimle ilişkilidir. Bir birim silindiğinde, ürünler birim referansını kaybeder.
+// 7. Brand (Marka)
+// Birincil Anahtar: id
+// İlişkiler:
+// Birden-Çoka ile Product (Ürün):
+// İlişki Alanı: Products
+// Açıklama: Bir marka birden fazla üründe yer alabilir, ancak her ürün sadece bir markaya aittir. Bir marka silindiğinde, ürünler marka referansını kaybeder.
+// 8. Product (Ürün)
+// Birincil Anahtar: id
+// İlişkiler:
+// Çoktan-Bire ile Category (Kategori):
+// İlişki Alanı: category
+// Açıklama: Her ürün bir kategoriye aittir. Bir kategori silindiğinde, ürünler kategori referansını kaybeder.
+// Çoktan-Bire ile Unit (Birim):
+// İlişki Alanı: unit
+// Açıklama: Her ürün bir birimle ilişkilidir. Bir birim silindiğinde, ürünler birim referansını kaybeder.
+// Çoktan-Bire ile Brand (Marka):
+// İlişki Alanı: brand
+// Açıklama: Her ürün bir marka ile ilişkilidir. Bir marka silindiğinde, ürünler marka referansını kaybeder.
+// Çoktan-Bire ile Supplier (Tedarikçi):
+// İlişki Alanı: supplier
+// Açıklama: Her ürün bir tedarikçi tarafından sağlanır. Bir tedarikçi silindiğinde, ürünler tedarikçi referansını kaybeder.
+// Çoktan-Bire ile Shop (Mağaza):
+// İlişki Alanı: shop
+// Açıklama: Her ürün bir mağazada satılır. Bir mağaza silindiğinde, ürünler mağaza referansını kaybeder.
+// Birden-Çoka ile SaleItem (Satış Kalemi):
+// İlişki Alanı: SaleItems
+// Açıklama: Bir ürün birden fazla satış kaleminde yer alabilir. Bir ürün silindiğinde, satış kalemlerindeki referanslar kaybolur.
+// 9. SaleItem (Satış Kalemi)
+// Birincil Anahtar: id
+// İlişkiler:
+// Çoktan-Bire ile Sale (Satış):
+// İlişki Alanı: sale
+// Açıklama: Her satış kalemi bir satışa aittir. Bir satış silindiğinde, satış kalemleri satış referansını kaybeder.
+// Çoktan-Bire ile Product (Ürün):
+// İlişki Alanı: product
+// Açıklama: Her satış kalemi bir ürüne aittir. Bir ürün silindiğinde, satış kalemleri ürün referansını kaybeder.
+// 10. Sale (Satış)
+// Birincil Anahtar: id
+// İlişkiler:
+// Çoktan-Bire ile Customer (Müşteri):
+// İlişki Alanı: customer
+// Açıklama: Her satış bir müşteri ile ilişkilidir. Bir müşteri silindiğinde, satışlar müşteri referansını kaybeder.
+// Çoktan-Bire ile Shop (Mağaza):
+// İlişki Alanı: shop
+// Açıklama: Her satış bir mağaza ile ilişkilidir. Bir mağaza silindiğinde, satışlar mağaza referansını kaybeder.
+// Birden-Çoka ile SaleItem (Satış Kalemi):
+// İlişki Alanı: SaleItems
+// Açıklama: Her satış birden fazla satış kalemi içerebilir. Bir satış silindiğinde, satış kalemleri kaybolur.
+// Önerilen Tablo Oluşturma Sırası
+// Enum Türleri:
+
+// Gender (Cinsiyet)
+// Role (Rol)
+// CustomerType (Müşteri Türü)
+// SupplierType (Tedarikçi Türü)
+// PaymentMethod (Ödeme Yöntemi)
+// SaleType (Satış Türü)
+// Ana Modeller:
+
+// User (Kullanıcı)
+// Customer (Müşteri)
+// Supplier (Tedarikçi)
+// Category (Kategori)
+// Unit (Birim)
+// Brand (Marka)
+// Shop (Mağaza)
+// Bağlantı Modelleri:
+
+// Product (Ürün)
+// Sale (Satış)
+// SaleItem (Satış Kalemi)
+// Model İlişkileri:
+
+// Yabancı anahtarların ve ilişkilerin doğru şekilde kurulduğundan emin olun. Önce ana modeller oluşturulmalı, sonra birden-çok ve çoktan-bire ilişkiler tanımlanmalıdır.
+// Silme Etkisi
+// Customer (Müşteri) Silme: İlişkili Sales (Satış) yetim kalır.
+// User (Kullanıcı) Silme: İlişkili Shops (Mağazalar) yetim kalır.
+// Shop (Mağaza) Silme: İlişkili Products (Ürünler) ve Sales (Satışlar) yetim kalır.
+// Supplier (Tedarikçi) Silme: İlişkili Products (Ürünler) yetim kalır.
+// Category (Kategori) Silme: İlişkili Products (Ürünler) yetim kalır.
+// Unit (Birim) Silme: İlişkili Products (Ürünler) yetim kalır.
+// Brand (Marka) Silme: İlişkili Products (Ürünler) yetim kalır.
+// Product (Ürün) Silme: İlişkili SaleItems (Satış Kalemleri) ve Category, Unit, Brand, Supplier ve Shop referansları kaybolur.
+// Sale (Satış) Silme: İlişkili SaleItems (Satış Kalemleri) ve Customer ve Shop referansları kaybolur.
+// SaleItem (Satış Kalemi) Silme: Diğer kayıtlar üzerinde daha fazla etkisi yoktur.
